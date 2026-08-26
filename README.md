@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Apeiro Autonomous Operations contributors
+SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
 
 SPDX-License-Identifier: Apache-2.0
 -->
@@ -31,6 +31,6 @@ We as members, contributors, and leaders pledge to make participation in our com
 
 ## Licensing
 
-Copyright 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors. Please see our [LICENSE](https://github.com/autonomous-operations-platform/website/blob/main/LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/operational-context-graph-website).
+Copyright 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors. Please see our [LICENSE](./LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/operational-context-graph-website).
 
 <p align="center"><img alt="Federal Ministry for Economic Affairs and Energy funding logo" src="./public/assets/img/BMWE-EU.png" width="400"/></p>
