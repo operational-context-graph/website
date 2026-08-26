@@ -1,0 +1,31 @@
+# This workflow warns and then closes issues and PRs that have had no activity for a specified amount of time.
+#
+# You can adjust the behavior by modifying this file.
+# For more information, see:
+# https://github.com/actions/stale
+name: Close stale issues and PRs
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Every day at 2 o'clock, the PRs and issues are checked for their topicality.
+
+jobs:
+  stale:
+    runs-on: [ubuntu-latest]
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          stale-issue-message: "Thank you for your contribution! This issue is stale because it has been open 60 days with no activity. In order to keep it open, please remove stale label or add a comment within the next 14 days."
+          stale-pr-message: "Thank you for your contribution! This pull request is stale because it has been open 60 days with no activity. In order to keep it open, please remove stale label or add a comment within the next 14 days."
+          close-issue-message: "Issue got stale and no further activity happened. It has automatically been closed. Please re-open in case you still consider it relevant."
+          close-pr-message: "Pull request got stale and no further activity happened. It has automatically been closed. Please re-open in case you still consider it relevant."
+          stale-issue-label: "stale"
+          stale-pr-label: "stale"
+          days-before-stale: 60
+          days-before-close: 14
+          remove-issue-stale-when-updated: true
+          remove-pr-stale-when-updated: true

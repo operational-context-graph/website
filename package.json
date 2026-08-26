@@ -1,5 +1,5 @@
 {
-  "name": "operational-context-graph-website",
+  "name": "@operational-context-graph/website",
   "version": "1.0.0",
   "description": "This Repository contains the Operational Context Graph Website and Documentation. This website is built using [VitePress](https://vitepress.dev/, a modern static website generator.",
   "repository": {
