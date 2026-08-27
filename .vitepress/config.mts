@@ -1,31 +1,30 @@
-import { defineConfig } from "vitepress";
+import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Operational Context Graph",
+  ignoreDeadLinks: [/^\.\/LICENSE$/, /^\.\/REUSE\.toml$/, /^\.\/AGENTS(\.md)?$/],
+  title: 'Operational Context Graph',
   head: [
     [
-      "link",
+      'link',
       {
-        rel: "icon",
-        type: "image/svg+xml",
-        href: "/assets/img/logo/operational-context-graph-icon-color.svg",
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/assets/img/logo/operational-context-graph-icon-color.svg',
       },
     ],
   ],
-  description: "Understand the semantics of your infrastructure.",
+  description: 'Understand the semantics of your infrastructure.',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    nav: [{ text: "Home", link: "/" }],
+    nav: [{ text: 'Home', link: '/' }],
 
     logo: {
-      src: "/assets/img/logo/operational-context-graph-icon-color.svg",
+      src: '/assets/img/logo/operational-context-graph-icon-color.svg',
       width: 24,
       height: 24,
     },
 
-    socialLinks: [
-      { icon: "github", link: "https://github.com/operational-context-graph" },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/operational-context-graph' }],
   },
-});
+})
