@@ -4,6 +4,8 @@ SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational 
 SPDX-License-Identifier: Apache-2.0
 -->
 
+[![REUSE status](https://api.reuse.software/badge/github.com/operational-context-graph/website)](https://api.reuse.software/info/github.com/operational-context-graph/website)
+
 # Operational Context Graph Website and Documentation
 
 ## About this project
