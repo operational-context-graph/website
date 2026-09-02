@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Code of Conduct
 
-All members of the project community must abide by the [SAP Open Source Code of Conduct](https://github.com/SAP/.github/blob/main/CODE_OF_CONDUCT.md).
+All members of the project community must abide by the [SAP Open Source Code of Conduct](https://github.com/operational-context-graph/.github/blob/main/CODE_OF_CONDUCT.md).
 Only by respecting each other we can develop a productive, collaborative community.
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting [a project maintainer](REUSE.toml).
 
@@ -35,8 +35,8 @@ You are welcome to contribute code in order to fix a bug or to implement a new f
 The following rule governs code contributions:
 
 - Contributions must be licensed under the [Apache 2.0 License](./LICENSE).
-- Due to legal reasons, contributors will be asked to accept a Developer Certificate of Origin (DCO) when they create the first pull request to this project. This happens in an automated fashion during the submission process. SAP uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
-- Contributions must follow our [guidelines on AI-generated code](https://github.com/SAP/.github/blob/main/CONTRIBUTING_USING_GENAI.md) in case you are using such tools. If you are using AI coding agents (e.g. Claude Code, OpenCode, Codex,), you must additionally follow the rules defined in [AGENTS.md](./AGENTS.md).
+- Due to legal reasons, contributors will be asked to accept a Developer Certificate of Origin (DCO) when they create the first pull request to this project. This happens in an automated fashion during the submission process. This project uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
+- Contributions must follow our [guidelines on AI-generated code](https://github.com/operational-context-graph/.github/blob/main/CONTRIBUTING_USING_GENAI.md) in case you are using such tools. If you are using AI coding agents (e.g. Claude Code, OpenCode, Codex,), you must additionally follow the rules defined in [AGENTS.md](./AGENTS.md).
 
 ## Issues and Planning
 
