@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+# ---
+# EditorConfig: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Go files (gofmt uses tabs)
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Java files
+[*.java]
+indent_size = 4
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = true
+
+[{Makefile,*.mk}]
+indent_style = tab
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# Properties files
+[*.properties]
+indent_size = 4
+
+# XML files
+[*.xml]
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+indent_size = 2
+
+# Python files
+[*.py]
+indent_size = 4
+
+# Dockerfile
+[Dockerfile*]
+indent_size = 4

@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+name: First-time contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: First-time contributors
+        uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3
+        with:
+          repo_token: ${{ steps.app-token.outputs.token }}
+          issue_message: >-
+            Thank you for opening your first issue. Please read the
+            [Contribution Guidelines](https://github.com/operational-context-graph/.github/blob/main/CONTRIBUTING.md)
+            and the [project documentation](https://operational-context-graph.dev).
+            If you later open a pull request, sign each commit with `git commit -s`.
+            A separate Developer Certificate of Origin (DCO) check will report its
+            status and instructions there.
+          pr_message: >-
+            Thank you for your first pull request. Please review the
+            [Contribution Guidelines](https://github.com/operational-context-graph/.github/blob/main/CONTRIBUTING.md)
+            and the [project documentation](https://operational-context-graph.dev).
+            Please sign each commit with `git commit -s`. A separate Developer
+            Certificate of Origin (DCO) check will report its status and instructions here.
