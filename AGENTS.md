@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Agent profiles
 
-Role profiles and the handoff template live in [`.claude/agents/`](.claude/agents/).
+Role profiles and the handoff template live in `.claude/agents/`.
 All tool adapters (Claude, Codex, and OpenCode) share this canonical source.
 
 | Role | Use when | Required handoff |
