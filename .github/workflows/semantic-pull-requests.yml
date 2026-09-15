@@ -9,6 +9,8 @@ on:
     types:
       - opened
       - edited
+      - reopened
+      - synchronize
 
 permissions:
   pull-requests: write
@@ -30,20 +32,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
           scopes: |
             deps
             devops
             security
             deployment
             architecture
-            ci
             github
-            ocg
           requireScope: false
-          subjectPattern: ${{ github.actor == 'renovate[bot]' && '.+' || '^.+ \((#[0-9]+|NO-TICKET)\)$' }}
-          subjectPatternError: |
-            The subject "{subject}" found in the pull request title "{title}" didn't match the configured pattern.
-            Please ensure that the subject ends with "(#123)" where "#123" is the GitHub issue number; or (NO-TICKET) if there isn't a related issue.
 
       - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         # When the previous steps fails, the workflow would stop. By adding this
