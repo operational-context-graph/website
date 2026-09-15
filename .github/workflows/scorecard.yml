@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 ---
-
 # This workflow uses actions that are not certified by GitHub. They are provided
 # by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
@@ -13,9 +12,9 @@ on:
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
   branch_protection_rule:
   schedule:
-    - cron: '15 7 * * 0'
+    - cron: "22 7 * * 0"
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions: read-all
 
