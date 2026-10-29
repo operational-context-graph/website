@@ -1,5 +1,3 @@
----
-
 name: threat-modeler
 description: Use when designing a new component, service integration, or data flow, before implementation begins.
 

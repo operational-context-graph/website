@@ -1,5 +1,3 @@
----
-
 name: architect
 description: Use when making a design decision, writing or reviewing an ADR, evaluating a cross-component change, or choosing between architectural options.
 

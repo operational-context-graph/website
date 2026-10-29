@@ -1,5 +1,3 @@
----
-
 name: code-reviewer
 description: Use when reviewing a pull request or diff for correctness, test coverage, error handling, and maintainability. Does not replace security-reviewer for high-risk changes.
 

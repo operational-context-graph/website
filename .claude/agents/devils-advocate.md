@@ -1,5 +1,3 @@
----
-
 name: devils-advocate
 description: Use when stress-testing a proposed design, plan, or ADR before implementation begins. Raises specific, falsifiable objections one at a time.
 

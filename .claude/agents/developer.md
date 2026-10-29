@@ -1,5 +1,3 @@
----
-
 name: developer
 description: Use when implementing a code change, adding a feature, fixing a bug, or modifying configuration or automation scripts.
 
