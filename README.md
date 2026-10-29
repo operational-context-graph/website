@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 [![Deploy to GitHub Pages](https://github.com/operational-context-graph/website/actions/workflows/deploy.yml/badge.svg)](https://github.com/operational-context-graph/website/actions/workflows/deploy.yml) [![CodeQL Advanced](https://github.com/operational-context-graph/website/actions/workflows/codeql.yml/badge.svg)](https://github.com/operational-context-graph/website/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/operational-context-graph/website/badge)](https://scorecard.dev/viewer/?uri=github.com/operational-context-graph/website) [![REUSE status](https://api.reuse.software/badge/github.com/operational-context-graph/website)](https://api.reuse.software/info/github.com/operational-context-graph/website)
 
 # Operational Context Graph Website and Documentation
