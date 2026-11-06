@@ -1,4 +1,9 @@
 :root {
+  color-scheme: light;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(135deg, #c1412d 0%, #e07060 50%, #91412d 100%);
+
   --vp-home-hero-image-background-image: radial-gradient(
     ellipse at 50% 30%,
     rgba(193, 65, 45, 0.9) 0%,
@@ -6,12 +11,53 @@
     transparent 88%
   );
   --vp-home-hero-image-filter: blur(80px);
+}
 
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(
-    135deg,
-    #c1412d 0%,
-    #e07060 50%,
-    #91412d 100%
+.VPFeature .title {
+  min-height: 3rem;
+}
+
+.VPFeature {
+  position: relative;
+  overflow: hidden;
+}
+
+.VPFeature::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    400px circle at var(--glow-x, -400px) var(--glow-y, -400px),
+    rgba(193, 65, 45, 0.35) 0%,
+    rgba(224, 112, 96, 0.18) 45%,
+    transparent 70%
   );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.VPFeature:hover::before {
+  opacity: 1;
+}
+
+.VPFeature .box {
+  position: relative;
+  z-index: 1;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --vp-home-hero-image-background-image: radial-gradient(
+    ellipse at 50% 30%,
+    rgba(193, 65, 45, 0.9) 0%,
+    rgba(145, 65, 45, 0.5) 50%,
+    transparent 88%
+  );
+}
+
+.vp-doc .mermaid {
+  overflow-x: auto;
 }
