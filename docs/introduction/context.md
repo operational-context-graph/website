@@ -18,7 +18,7 @@ The OCG is designed to support the following categories of use cases, though the
 
 ### Autonomous operations
 
-The Analysis and Automation Platform (AAP) reads from the OCG to detect anomalies, trace root causes, and drive autonomous remediation. It reads telemetry, semantic network state, prior analysis results, and operational policies. It writes findings back into the Insights Repository so future reasoning cycles can build on them.
+The Insight and Automation Platform (IAP) reads from the OCG to detect anomalies, trace root causes, and drive autonomous remediation. It reads telemetry, semantic network state, prior analysis results, and operational policies. It writes findings back into the Insights Repository so future reasoning cycles can build on them.
 
 ### Sustainability and workload placement
 
