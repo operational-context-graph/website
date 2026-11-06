@@ -24,6 +24,6 @@ The one active role the OCG plays is building and maintaining the **semantic net
 
 ## A stable foundation for evolving consumers
 
-Data center tooling changes. Automation strategies evolve. New analytics consumers are added; old ones retire.
+Data center tooling changes. Automation strategies evolve. Teams add new analytics consumers and retire old ones.
 
 The OCG provides a stable foundation that outlasts any individual consuming system. Because it applies no business logic, it does not need to change when consuming systems change their strategy. A new consumer reads the same data as the old one, with no migration required.
