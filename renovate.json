@@ -3,7 +3,9 @@
   "addLabels": ["renovate"],
   "automerge": true,
   "autoApprove": true,
-  "dependencyDashboard": true,
+  "dependencyDashboard": {
+    "enabled": true
+  },
   "extends": [
     "config:best-practices",
     ":automergeMinor",
