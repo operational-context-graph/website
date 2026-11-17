@@ -82,31 +82,3 @@ If Data Ingestion returns `UNAVAILABLE`, the run aborts and the Kubernetes Job c
 When `CONNECTOR_GRPC__CERT_FILE` and `CONNECTOR_GRPC__KEY_FILE` are set, the connector loads the X.509 client certificate and presents it on every gRPC call to Data Ingestion. Without them, the connection uses no TLS. The connector fails fast at startup if the files are configured but cannot be loaded.
 
 NetBox communication uses HTTPS with a bearer token read from a mounted secret.
-
-### 2.5 Configuration
-
-All configuration is read at startup via the `CONNECTOR_` environment variable prefix. The connector fails fast on any missing required value.
-
-| Environment variable           | Required | Description                                                                                             |
-| ------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
-| `CONNECTOR_NETBOX__BASE_URL`   | Yes      | Base URL of the NetBox instance.                                                                        |
-| `CONNECTOR_NETBOX__TOKEN`      | No       | Bearer token for NetBox API authentication.                                                             |
-| `CONNECTOR_NETBOX__PAGE_SIZE`  | Yes      | Records per page when paginating NetBox. Range: 1–10000.                                                |
-| `CONNECTOR_GRPC__ENDPOINT`     | Yes      | Address of the Data Ingestion gRPC endpoint.                                                            |
-| `CONNECTOR_GRPC__CONNECTOR_ID` | Yes      | Connector identity passed in each `MessageEnvelope`.                                                    |
-| `CONNECTOR_GRPC__CERT_FILE`    | No       | Path to the TLS client certificate (Privacy Enhanced Mail (PEM) format).                                |
-| `CONNECTOR_GRPC__KEY_FILE`     | No       | Path to the TLS client private key (PEM format).                                                        |
-| `CONNECTOR_SCHEMA_VERSION`     | Yes      | Schema version to set on every envelope.                                                                |
-| `CONNECTOR_ENDPOINTS`          | Yes      | Comma-separated list of NetBox endpoint paths to poll.                                                  |
-| `CONNECTOR_ARTIFACT_TYPES`     | No       | JSON object mapping endpoint path to logical artifact type. Overrides `DefaultArtifactTypes` per entry. |
-
-### 2.6 Deployment
-
-The connector runs as a Kubernetes `Job`. The Job spec mounts the TLS client certificate and NetBox token as secrets and sets the environment variables from [§2.7](#27-configuration).
-
-The Kubernetes Job controller handles retries. The connector itself makes no retry attempt within a run - any fatal error exits immediately. The connector listens for `SIGTERM` and `SIGINT` and stops cleanly between endpoints when one is received.
-
-| Exit code | Meaning                                                                                         |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| `0`       | All endpoints processed; summary log written.                                                   |
-| `1`       | Fatal error: config load failure, publisher init failure, or `UNAVAILABLE` from Data Ingestion. |
