@@ -9,3 +9,5 @@ The OCG stores and serves data. It does not analyze, decide, or act. Consuming s
 - [Context](./context) — How the OCG fits into autonomous operations and other use cases
 - [Motivation](./motivation) — The problem the OCG solves and the principles it is built on
 - [Components](./components) — A high-level overview of the OCG's building blocks
+
+Ready to deploy OCG on your own infrastructure? See the [Getting Started guide](../adoption/).

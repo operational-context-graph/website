@@ -8,6 +8,7 @@ title: Documentation
 ## Where to start
 
 - New to the platform? Start with the [Introduction](./introduction/).
+- Ready to deploy? Follow the [Getting Started guide](./adoption/).
 
 ## Support
 
