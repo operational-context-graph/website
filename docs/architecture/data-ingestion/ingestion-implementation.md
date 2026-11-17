@@ -13,105 +13,9 @@ This diagram shows the different components inside of the Data Ingestion.
 - **Clients** talk to external systems and are used by the processing layer.
   - The **Schema Registry Client** is the REST API client for the Schema Registry web service. It hides the HTTP calls and fetches artifacts - the schema, the source mapping, and the target-store mapping for a `(logical_artifact_type, schema_version)`, plus the default telemetry schema. It caches the immutable results in memory.
 - **Store adapters** deliver the data to the stores. They are more than just a client because they can contain logic that is specific to the store they belong to (beyond just mapping it to the wire format).
-  - The **Telemetry Store adapter** and **Inventory Store adapter** each implement the shared store-writer interface and map a batch of records (which adhere to the canonical data model) to their store's own wire protocol.
+  - The **Telemetry Store adapter** and **Inventory Store adapter** each map a batch of records (which adhere to the canonical data model) to their store's own wire protocol.
 - **Processing layer:** Contains the **ingestion pipeline** (validate → normalize → write outbox → ack), the **Source Mapping Execution Engine** (applies a source-mapping artifact to produce the canonical record), the **outbox drain** (route to the target store, batch, deliver at-least-once), and the **backfill** logic (watermark store and gap state machine).
 - **Receiving layer** defines the wire protocols for the connectors and calls the processing layer.
-
-### Go interfaces between the layers
-
-The signatures below are **illustrative, not final**. They fix the shape of each boundary so the client, processing-layer, and receiving-layer tickets can start in parallel. The dependent ticket owners can deviate from these proposals.
-
-```go
-// Processing layer.
-
-// SchemaKey identifies one immutable schema release: the (logical_artifact_type, schema_version) pair.
-// Passing it as one value (instead of two adjacent strings) keeps call sites type-safe and
-// prevents swapping the two arguments by mistake.
-type SchemaKey struct {
-    Type    string
-    Version string
-}
-
-// IngestRecord is the wire-neutral input the ingestion pipeline consumes. Each receiver maps its own
-// wire format into it: the gRPC services copy it from MessageEnvelope (near field-for-field),
-// and the OTLP receiver builds it from each OTLP record plus the logical_artifact_type/schema_version
-// metadata headers.
-type IngestRecord struct {
-    Schema      SchemaKey
-    Payload     []byte
-    ContentType string
-    Partition   []byte // optional, opaque; empty for OTLP (push-only, no backfill)
-    Watermark   []byte // optional, opaque; empty for OTLP
-}
-
-// Ingestor is the ingestion pipeline entry point. The receiving layer (IngestionService,
-// BackfillService.Ingest, and the OTLP receiver) maps its wire format into a batch of
-// IngestRecord and calls Ingest, which runs the synchronous ingest half: validate, normalize,
-// and write each record to the outbox.
-type Ingestor interface {
-    // Ingest processes one batch and returns per-batch counts. Record-level problems (failed
-    // schema, unregistered type) are counted in IngestResult, not returned as errors, so one
-    // bad record does not stop the others. A non-nil error is a request-level failure (for
-    // example the outbox is unavailable); the receiving layer maps it to a gRPC status and
-    // back-pressures the connector.
-    Ingest(ctx context.Context, batch []IngestRecord) (IngestResult, error)
-}
-
-// IngestResult reports per-batch counts; Accepted + Rejected == len(batch). The receiving layer maps
-// Rejected to IngestResponse.partial_success.rejected_messages, which is an int64 count (plus one
-// optional aggregate error_message); the proto carries no per-envelope detail.
-type IngestResult struct {
-    Accepted int
-    Rejected int
-}
-
-// Source Mapping Execution Engine (processing layer). Applies a source-mapping artifact
-// (fetched from the Schema Registry) to a validated record and returns the canonical record.
-type SourceMappingExecutionEngine interface {
-    Normalize(mapping SourceMapping, record IngestRecord) (CanonicalRecord, error)
-}
-
-// Clients layer.
-
-// Schema Registry Client (#274). Immutable per ADR-012, so results are cached. The lookups take
-// a context because they may reach the registry on a cache miss.
-type SchemaRegistryClient interface {
-    Schema(ctx context.Context, key SchemaKey) (Schema, error)
-    SourceMappings(ctx context.Context, sourceKey SchemaKey) (SourceMapping, error)
-    TargetStore(ctx context.Context, key SchemaKey) (StoreID, error)
-    DefaultLogSchema(ctx context.Context) (SchemaKey, error)
-    DefaultTraceSchema(ctx context.Context) (SchemaKey, error)
-    DefaultMetricSchema(ctx context.Context) (SchemaKey, error)
-
-}
-
-// ErrOverloaded reports transient store back-pressure: the batch was not written and the drain
-// should pause this store and retry the same batch later. A PermanentError reports a batch the
-// store will never accept; the drain logs it and moves on. Any other non-nil error is an
-// unexpected failure the drain treats like back-pressure (pause and retry).
-var ErrOverloaded = errors.New("store overloaded")
-
-type PermanentError struct {
-    Reason string
-}
-
-func (e *PermanentError) Error() string { return e.Reason }
-
-// Shared store-writer interface implemented by each adapter (#275, #276).
-type StoreWriter interface {
-    // StoreID is the destination this adapter serves. It must match the outbox target_store
-    // value and the Schema Registry's target-store mapping.
-    StoreID() StoreID
-    // Write delivers one immutable batch. A nil error means the store accepted the batch.
-    // Callers distinguish failures with errors.Is(err, ErrOverloaded) and errors.As for
-    // *PermanentError.
-    Write(ctx context.Context, batch []CanonicalRecord) error
-    // Limits reports this store's batch thresholds: max records N, max bytes M, max linger T.
-    Limits() BatchLimits
-}
-```
-
-The two adapters depend only on `StoreWriter`, so the drain stays generic.
 
 ## Receiving layer
 
@@ -156,21 +60,7 @@ The target store for each `(logical_artifact_type, schema_version)` is defined i
 
 ### Outbox schema
 
-The outbox reuses the existing OCG PostgreSQL instance. All records share one outbox table. This harmonizes the generic components and allows us to add more stores in the future easily. A `target_store` column discriminates the destination. If delivery volume ever demands it, the one table can be partitioned by `target_store` without changing this logical model.
-
-Schema proposal:
-
-| Column                                    | Purpose                                                                                                |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `id`                                      | Monotonic sequence, primary key. Defines outbox order. Set on DB level, not in application code.       |
-| `target_store`                            | `StoreID` of the destination, resolved from the registry at ingest. The drain groups and routes by it. |
-| `logical_artifact_type`, `schema_version` | Specify the schema of the canonical data model.                                                        |
-| `payload`                                 | The canonical record written by the ingestion pipeline after normalization.                            |
-| `content_type`                            | Optional, carried from the envelope.                                                                   |
-| `batch_id`                                | Nullable. `NULL` means pending; the drain sets it when it pins the batch.                              |
-| `created_at`                              | Insert time, used for linger and observability.                                                        |
-
-Two indexes support the drain: a partial index on `(target_store, id) WHERE batch_id IS NULL` for "pending rows for a store, in order," and an index on `batch_id` for resend and delete. The drain keeps no per-row delivery bookkeeping (no attempt count or last-error column); a failed write is retried on the pinned batch, and a permanent failure is logged (see the store-writer interface below).
+The outbox reuses the existing OCG PostgreSQL instance. All records share one outbox table. This harmonizes the generic components and allows us to add more stores in the future easily.
 
 ### Ingest half
 
@@ -239,16 +129,13 @@ sequenceDiagram
 The drain treats every store the same way through one shared **store-writer interface**. It takes a batch of normalized records and signals one of three outcomes (expressed as a Go `error`, see the Component structure and layering section):
 
 - **Accepted** - the store durably took the batch; the drain removes those rows from the outbox.
-  The adapter returns a `nil` error.
 - **Overloaded** - the store is temporarily unable to accept more; the drain pauses that store and
   retries the pinned batch with exponential back-off and jitter, capped at a maximum interval.
-  Other stores keep draining. The adapter returns `ErrOverloaded`.
+  Other stores keep draining.
 - **PermanentFailure** - the batch can never succeed as written (for example a store-side rejection).
-  The drain logs the error and drops the batch's rows from the outbox. This is a permanent loss of data that will not reach the store. New records for that store are still accepted. The adapter returns a `PermanentError`.
+  The drain logs the error and drops the batch's rows from the outbox. This is a permanent loss of data that will not reach the store. New records for that store are still accepted.
 
 Each adapter reports its batch limits to the drain: maximum records (N), maximum bytes (M), and maximum linger time (T).
-
-Each adapter also declares the `StoreID` it serves, so the drain can map a row's `target_store` to the adapter that handles it. The same `StoreID` vocabulary must be used by the Schema Registry's target-store mapping, the outbox `target_store` column, and the adapter's declared identity.
 
 #### Batching
 

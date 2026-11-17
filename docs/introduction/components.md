@@ -6,16 +6,16 @@ The OCG is made up of specialized stores and a semantic network that ties them t
 
 Each store uses a storage engine matched to its workload. They cannot be collapsed into a single engine without degrading all of them.
 
-| Store                             | What it holds                                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Infrastructure Knowledge Base** | Inventory, configuration baselines, and component definitions                            |
-| **Document Library**              | Runbooks and operational policy documents                                                |
-| **Telemetry Store**               | Time-series metrics, logs, and traces from all data center systems                       |
-| **Insights Repository**           | Analysis results and recommendations written by analytics consumers                      |
-| **Recorded Actions Repository**   | Immutable, tamper-evident record of every manual and automated action                    |
-| **Semantic Network**              | Property graph, vector index, and temporal index of all entities and their relationships |
-| **Secrets Vault**                 | Credentials, API keys, and certificates                                                  |
-| **Audit Log Service**             | Authentication, authorization, data access, and component lifecycle events               |
+| Store                             | What it holds                                                                                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Infrastructure Knowledge Base** | Inventory, configuration baselines, and component definitions                                                                                        |
+| **Document Library**              | Runbooks and operational policy documents                                                                                                            |
+| **Telemetry Store**               | Relevant subset of time-series metrics, logs, and traces from data center systems and Autonomous Operations Satellites to build the Semantic Network |
+| **Insights Repository**           | Analysis results and recommendations written by analytics consumers                                                                                  |
+| **Recorded Actions Repository**   | Immutable, tamper-evident record of every manual and automated action                                                                                |
+| **Semantic Network**              | Property graph, vector index, and temporal index of all entities and their relationships                                                             |
+| **Secrets Vault**                 | Credentials, API keys, and certificates                                                                                                              |
+| **Audit Log Service**             | Authentication, authorization, data access, and component lifecycle events                                                                           |
 
 ## The semantic network
 

@@ -14,7 +14,7 @@ The Operational Context Graph (OCG) is the single shared data store for a data c
 
 ### OCG Dashboard
 
-The dashboard is the primary user interface. It spans all OCG components and exposes their data to operators and automated agents.
+The dashboard is the primary user interface. It spans all OCG components and exposes their data to human operators.
 
 ### [Data Ingestion](./data-ingestion/)
 
@@ -24,12 +24,12 @@ Data Ingestion is the entry point for all external data. It receives raw data fr
 
 Connectors integrate external systems with Data Ingestion. The OCG ships the following connector types:
 
-| Connector               | Data it provides                  |
-| ----------------------- | --------------------------------- |
-| Satellite Connector     | Satellite and deployment metadata |
-| Telemetry Connector     | Metrics, traces, and logs         |
-| [Inventory Connector](./inventory-connector)     | Infrastructure inventory records  |
-| External Data Connector | Other external data sources       |
+| Connector                                    | Data it provides                  |
+| -------------------------------------------- | --------------------------------- |
+| Satellite Connector                          | Satellite and deployment metadata |
+| Telemetry Connector                          | Metrics, traces, and logs         |
+| [Inventory Connector](./inventory-connector) | Infrastructure inventory records  |
+| External Data Connector                      | Other external data sources       |
 
 ### Infrastructure Knowledge Base
 

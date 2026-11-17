@@ -36,7 +36,7 @@ OTEL_EXPORTER_OTLP_HEADERS=connector-id=f5-syslog-1,schema-type=ocg.otlp.logs,sc
 - The source MUST send OTLP/gRPC to the Data Ingestion gRPC endpoint.
 - The source MUST set `connector-id` as an export header unless mTLS supplies the identity
   through the client certificate CN.
-- The source SHOULD set `schema-type` and `schema-version` as export headers when the
+- The source SHOULD set `logical-artifact-type` and `schema-version` as export headers when the
   stream does not match the signal default.
 
 ## Method 2 - OTLP Collector hop

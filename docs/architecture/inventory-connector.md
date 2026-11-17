@@ -10,31 +10,9 @@ The connector does not manage watermarks itself. It embeds a partition key and a
 
 ## 1. Governing Decisions
 
-### 1.1 Responsibility split
-
-| Responsibility                                            | Owner                               |
-| --------------------------------------------------------- | ----------------------------------- |
-| Pagination and record retrieval from NetBox               | Inventory Connector                 |
-| Envelope construction (partition, watermark, raw payload) | Inventory Connector                 |
-| TLS client certificate authentication to Data Ingestion   | Inventory Connector                 |
-| Schema validation and normalization                       | Data Ingestion                      |
-| Watermark persistence and gap tracking                    | Data Ingestion                      |
-| Retry on transient failure                                | Kubernetes Job controller (restart) |
-| Durability (outbox)                                       | Data Ingestion                      |
-
-### 1.2 Stateless batch job - no retry within a run
-
-The connector is stateless. It makes no retry attempt within a run. Any fatal error - config load failure, publisher init failure, or `UNAVAILABLE` from Data Ingestion - causes an immediate `exit 1`. The Kubernetes Job controller handles retries by restarting the Job.
-
-This keeps the run model simple and makes failures directly observable as Job restart events.
-
-### 1.3 Partition and watermark shape
+### 1.1 Partition and watermark shape
 
 The `IngestionService` interface requires each `MessageEnvelope` to carry a `partition` and a `watermark`. The Connector uses the NetBox integer `id` as the watermark value, and the endpoint path as the partition key.
-
-### 1.4 Structured logging with log/slog
-
-The connector needs a structured logging library. The connector is a Kubernetes batch job that runs for seconds to minutes. High-throughput logging performance is not a requirement. It uses the standard Go library `log/slog` for logging.
 
 ## 2. Design Views
 
@@ -56,90 +34,41 @@ flowchart LR
     IC -->|"IngestionService.Ingest\n(gRPC / TLS)"| DI
 ```
 
-### 2.2 Composition
-
-The connector is a single Go binary with the following internal packages:
-
-| Package              | Responsibility                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `cmd/connector`      | Entry point. Loads config, wires dependencies, calls the runner, exits.                                                       |
-| `internal/config`    | Reads and validates configuration from environment variables and mounted files.                                               |
-| `internal/netbox`    | `HTTPClient` paginates a single NetBox endpoint. `DefaultArtifactTypes` maps each endpoint path to its logical artifact type. |
-| `internal/envelope`  | Builds a `MessageEnvelope` from a raw JSON record. Extracts `id` for the watermark.                                           |
-| `internal/runner`    | `Connector` iterates endpoints, calls the NetBox client, builds envelopes, and calls the publisher.                           |
-| `internal/publisher` | `Publisher` interface with one production implementation: `GRPCPublisher`.                                                    |
-
-```mermaid
-%%{init: {'flowchart': {'useMaxWidth': false}}}%%
-flowchart TD
-    subgraph cmd ["cmd/connector"]
-        MAIN["main.go"]
-    end
-    subgraph config ["internal/config"]
-        CFG["Config"]
-    end
-    subgraph netbox ["internal/netbox"]
-        CLIENT["HTTPClient"]
-        ENDPOINTS["DefaultArtifactTypes"]
-    end
-    subgraph envelope ["internal/envelope"]
-        ENV["Message builder"]
-    end
-    subgraph runner ["internal/runner"]
-        ORCH["Connector"]
-    end
-    subgraph publisher ["internal/publisher"]
-        PUB["Publisher interface"]
-        GRPC["GRPCPublisher"]
-    end
-
-    MAIN --> CFG
-    MAIN --> ORCH
-    ORCH --> CLIENT
-    ORCH --> ENV
-    ORCH --> PUB
-    ORCH --> ENDPOINTS
-    PUB --> GRPC
-```
-
-### 2.3 Run sequence
+### 2.2 Run sequence
 
 Each run is a single pass over all configured endpoints. There is no partial retry - a failure at any point exits the run immediately.
 
 ```mermaid
 %%{init: {'sequence': {'useMaxWidth': false}}}%%
 sequenceDiagram
-    participant K8s as k8s Job
-    participant Main as main.go
-    participant Runner as Connector (runner)
-    participant NB as HTTPClient (NetBox)
-    participant Pub as GRPCPublisher
-    participant DI as Data Ingestion (IngestionService)
+    participant K8s as Kubernetes Job
+    participant Connector
+    participant NetBox
+    participant Publisher
+    participant DI as Data Ingestion
 
-    K8s->>Main: start (cert+key mounted, config loaded)
-    Main->>Runner: Run(ctx)
+    K8s->>Connector: start with mounted secrets and loaded config
 
     loop for each endpoint
-        Runner->>NB: Paginate(ctx, endpoint)
-        NB-->>Runner: []json.RawMessage
-        note over Runner: Build(raw) → MessageEnvelope
-        note over Runner: partition, watermark, artifact id
-        Runner->>Pub: Publish(ctx, []Message)
-        loop per batch (1000 msgs or 4 MiB)
-            Pub->>DI: IngestionService.Ingest(batch)
-            DI-->>Pub: IngestResponse
+        Connector->>NetBox: fetch records page by page
+        NetBox-->>Connector: raw records
+        note over Connector: wrap each record in a message envelope
+        note over Connector: assign partition, watermark, and artifact type
+        Connector->>Publisher: publish message envelopes
+        loop per batch
+            Publisher->>DI: ingest batch
+            DI-->>Publisher: acknowledgement
         end
-        alt UNAVAILABLE
-            Pub-->>Runner: error
-            Runner-->>Main: error
-            Main->>K8s: exit 1
+        alt unavailable
+            Publisher-->>Connector: error
+            Connector->>K8s: exit 1
         end
     end
 
-    Main->>K8s: exit 0 + summary log
+    Connector->>K8s: exit 0 with summary log
 ```
 
-### 2.4 Envelope batching
+### 2.3 Envelope batching
 
 The `GRPCPublisher` accumulates envelopes and flushes each batch when either limit is reached:
 
@@ -148,25 +77,13 @@ The `GRPCPublisher` accumulates envelopes and flushes each batch when either lim
 
 If Data Ingestion returns `UNAVAILABLE`, the run aborts and the Kubernetes Job controller retries the entire run.
 
-### 2.5 Authentication and transport security
+### 2.4 Authentication and transport security
 
 When `CONNECTOR_GRPC__CERT_FILE` and `CONNECTOR_GRPC__KEY_FILE` are set, the connector loads the X.509 client certificate and presents it on every gRPC call to Data Ingestion. Without them, the connection uses no TLS. The connector fails fast at startup if the files are configured but cannot be loaded.
 
 NetBox communication uses HTTPS with a bearer token read from a mounted secret.
 
-### 2.6 Observability
-
-The connector uses `log/slog` from the Go standard library. All calls use structured key-value pairs - no format strings - so output is machine-parseable when a JSON handler is wired at startup.
-
-| Level   | Emitted when                                                                                                               |
-| ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `Info`  | Connector start with config summary; per-endpoint completion with record count; connector finish with totals and duration. |
-| `Warn`  | Individual envelope build failures (malformed records are skipped, not fatal).                                             |
-| `Error` | Fatal errors before `os.Exit(1)`: config load failure, publisher init failure, endpoint failure.                           |
-
-The exit code is the primary health signal for the Kubernetes Job controller.
-
-### 2.7 Configuration
+### 2.5 Configuration
 
 All configuration is read at startup via the `CONNECTOR_` environment variable prefix. The connector fails fast on any missing required value.
 
@@ -183,7 +100,7 @@ All configuration is read at startup via the `CONNECTOR_` environment variable p
 | `CONNECTOR_ENDPOINTS`          | Yes      | Comma-separated list of NetBox endpoint paths to poll.                                                  |
 | `CONNECTOR_ARTIFACT_TYPES`     | No       | JSON object mapping endpoint path to logical artifact type. Overrides `DefaultArtifactTypes` per entry. |
 
-### 2.8 Deployment
+### 2.6 Deployment
 
 The connector runs as a Kubernetes `Job`. The Job spec mounts the TLS client certificate and NetBox token as secrets and sets the environment variables from [§2.7](#27-configuration).
 
