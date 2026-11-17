@@ -20,10 +20,9 @@ This guide walks you through deploying the Operational Context Graph (OCG) on yo
 - Kubernetes **1.27 or later**
 - A default storage class that supports `ReadWriteOnce` volumes
 
-### Access
+### Container registry
 
-- Access to a [NetBox](https://netbox.dev) instance reachable from the cluster, with a read-only API token
-- No container registry authentication is required. All OCG images are published publicly to `ghcr.io/operational-context-graph`.
+All OCG images are published publicly to `ghcr.io/operational-context-graph`. No authentication is required to pull them.
 
 ## Resource requirements
 
@@ -74,13 +73,9 @@ kubectl create secret generic postgres-secret \
   -n <your-namespace> --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-Create the NetBox API token secret. The inventory connector uses this to authenticate with NetBox.
+> **Production note:** The PostgreSQL connection string must be supplied as a Kubernetes Secret and must not appear in a ConfigMap or committed manifest. The default Helm value sets `sslmode=require` (encrypted, no CA verification). For production, set `sslmode=verify-full` and mount a CA certificate to verify the server identity.
 
-```sh
-kubectl create secret generic netbox-token \
-  --from-literal=token=<your-netbox-token> \
-  -n <your-namespace> --dry-run=client -o yaml | kubectl apply -f -
-```
+> **Future:** Once the OCG Secrets Vault component is available, secrets should be managed through it rather than as raw Kubernetes Secrets.
 
 ## Step 3 — Clone the repository and deploy OCG without the telemetry store
 
@@ -98,7 +93,7 @@ Install the chart with `telemetry-store` disabled. The Doris root password is no
 helm upgrade --install ocg helm/ \
   --namespace <your-namespace> \
   --set telemetry-store.enabled=false \
-  --set inventory-connector.netbox.baseURL=<your-netbox-url>
+  --set inventory-connector.enabled=false
 ```
 
 Wait until the Doris cluster is healthy. FE must show `Available` and BE must show `Alive=true`.
@@ -141,9 +136,18 @@ Run this from the cloned repository directory.
 
 ```sh
 helm upgrade --install ocg helm/ \
-  --namespace <your-namespace> \
-  --set inventory-connector.netbox.baseURL=<your-netbox-url>
+  --namespace <your-namespace>
 ```
+
+## PostgreSQL connection pool sizing
+
+When running multiple `inventory-store` replicas against a shared PostgreSQL instance, keep the total connection count within the server limit.
+
+```
+replicas × DB_MAX_OPEN_CONNS ≤ max_connections − 3
+```
+
+The default Helm values set `DB_MAX_OPEN_CONNS = 25`. With 2 replicas and the PostgreSQL default of `max_connections = 100`, the aggregate is 50 — within the limit. Adjust `DB_MAX_OPEN_CONNS` or the PostgreSQL `max_connections` setting if you increase the replica count.
 
 ## Verify the deployment
 
@@ -176,6 +180,12 @@ curl -sf http://localhost:8082/healthz && echo "telemetry-store: ok"
 ```
 
 Each service returns `{"status":"ok"}` when healthy.
+
+## Connecting an inventory source
+
+The inventory connector syncs asset data from an external inventory system into the OCG Infrastructure Knowledge Base. It is not required for a functional core deployment and is disabled in the steps above.
+
+A dedicated guide covering connector setup and configuration will be published alongside the connector adoption documentation.
 
 ## Next steps
 
