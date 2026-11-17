@@ -1,11 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
-
-SPDX-License-Identifier: Apache-2.0
--->
-
----
-
 name: security-reviewer
 description: Use as the final reviewer before merging any change that touches authentication, authorization, secrets handling, network exposure, CI pipelines, agent harness files, or data storage.
 

@@ -1,11 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
-
-SPDX-License-Identifier: Apache-2.0
--->
-
----
-
 name: devils-advocate
 description: Use when stress-testing a proposed design, plan, or ADR before implementation begins. Raises specific, falsifiable objections one at a time.
 

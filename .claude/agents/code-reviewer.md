@@ -1,11 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
-
-SPDX-License-Identifier: Apache-2.0
--->
-
----
-
 name: code-reviewer
 description: Use when reviewing a pull request or diff for correctness, test coverage, error handling, and maintainability. Does not replace security-reviewer for high-risk changes.
 

@@ -1,11 +1,3 @@
-<!--
-SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Operational Context Graph contributors
-
-SPDX-License-Identifier: Apache-2.0
--->
-
----
-
 name: architect
 description: Use when making a design decision, writing or reviewing an ADR, evaluating a cross-component change, or choosing between architectural options.
 
