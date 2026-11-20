@@ -77,6 +77,14 @@ export default withMermaid(
             ],
           },
           {
+            text: "Adoption",
+            collapsed: false,
+            link: "/docs/adoption/",
+            items: [
+              { text: "Getting Started", link: "/docs/adoption/" },
+            ],
+          },
+          {
             text: "Architecture",
             collapsed: true,
             link: "/docs/architecture/",

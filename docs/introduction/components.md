@@ -28,3 +28,7 @@ The semantic network lets consumers answer questions such as: "Which services do
 ## Access
 
 No component accesses the underlying stores directly. All components connect through the OCG's standard API. Access is service-account-based with least-privilege permissions.
+
+## Deploy OCG
+
+Ready to run OCG on your own infrastructure? See the [Getting Started guide](../adoption/) for step-by-step deployment instructions.
