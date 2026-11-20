@@ -39,14 +39,6 @@ The following table lists the minimum resource requests for a functional deploym
 
 **Recommended minimum:** 12 CPU / 24 Gi RAM / 45 Gi persistent storage across the cluster.
 
-## Doris database provisioning
-
-The telemetry-store requires an `ocg` database to exist in Doris before migrations can run. This is currently handled automatically by the `migrate` init container, which runs `CREATE DATABASE IF NOT EXISTS ocg` before Goose initialises its version tracking table.
-
-> **Known limitation:** The database name `ocg` is currently hardcoded. Consumers cannot choose a different database name without modifying the chart. This will be addressed in a future release by making the database name configurable.
-
-> **Future:** Database provisioning will be moved out of the service and into the Doris Helm chart as a dedicated Helm hook Job. This means `CREATE DATABASE IF NOT EXISTS ocg` will run once at infrastructure provisioning time, independent of any service deployment.
-
 ## Step 1 — Install the Doris Operator (once per cluster)
 
 The Doris Operator manages the Doris FE and BE StatefulSets. Install it once into its own namespace before deploying OCG.
@@ -110,9 +102,9 @@ Wait until the Doris cluster is healthy. FE must show `Available` and BE must sh
 kubectl get doriscluster -n <your-namespace>
 ```
 
-## Step 4 — Set the Doris root password and create telemetry-store secrets
+## Step 4 — Set the Doris root password and create the database
 
-Once the Doris cluster is healthy, set the root password and create the three secrets the telemetry-store needs.
+Once the Doris cluster is healthy, set the root password and create the Doris database that the telemetry-store will migrate into. The default database name is `ocg`. You can use a different name by passing `--set telemetry-store.env.DORIS_DATABASE=<your-db-name>` in the later helm upgrade step — if you do, replace `ocg` with your chosen name in the command below.
 
 > **Note:** The telemetry-store currently connects to Doris using the `root` account. Dedicated read and write users are not yet provisioned by the chart. This will be addressed in a future release.
 
@@ -121,6 +113,16 @@ kubectl exec -n <your-namespace> ocg-doris-fe-0 \
   -- mysql -h 127.0.0.1 -P 9030 -u root \
   -e "SET PASSWORD FOR 'root'@'%' = PASSWORD('<your-doris-password>');"
 ```
+
+```sh
+kubectl exec -n <your-namespace> ocg-doris-fe-0 \
+  -- mysql -h 127.0.0.1 -P 9030 -u root \
+  -e "CREATE DATABASE IF NOT EXISTS <your-db-name>;"
+```
+
+> **Future:** This manual database creation step will be removed in a future release. Database provisioning will be handled automatically by a Helm hook Job in the Doris chart, running once per `helm upgrade` before any service migrations.
+
+## Step 5 — Create telemetry-store secrets
 
 ```sh
 kubectl create secret generic telemetry-store-doris-secret \
@@ -138,7 +140,7 @@ kubectl create secret generic telemetry-store-doris-ddl-secret \
   -n <your-namespace> --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-## Step 5 — Enable the telemetry store and upgrade
+## Step 6 — Enable the telemetry store and upgrade
 
 Run this from the cloned repository directory.
 
