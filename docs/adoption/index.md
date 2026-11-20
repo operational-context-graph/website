@@ -120,6 +120,14 @@ kubectl exec -n <your-namespace> ocg-doris-fe-0 \
   -e "CREATE DATABASE IF NOT EXISTS <your-db-name>;"
 ```
 
+Grant the stream-load user access to the new database. Without this, the telemetry-store will start but all ingest requests will fail with a 502. Replace `<your-stream-load-user>` with the value you will set for `DORIS_STREAM_LOAD_USER` in Step 5 (the default is `root`).
+
+```sh
+kubectl exec -n <your-namespace> ocg-doris-fe-0 \
+  -- mysql -h 127.0.0.1 -P 9030 -u root \
+  -e "GRANT LOAD_PRIV ON <your-db-name>.* TO '<your-stream-load-user>'@'%'; GRANT SELECT_PRIV ON <your-db-name>.* TO '<your-stream-load-user>'@'%';"
+```
+
 > **Future:** This manual database creation step will be removed in a future release. Database provisioning will be handled automatically by a Helm hook Job in the Doris chart, running once per `helm upgrade` before any service migrations.
 
 ## Step 5 — Create telemetry-store secrets
