@@ -39,6 +39,14 @@ The following table lists the minimum resource requests for a functional deploym
 
 **Recommended minimum:** 12 CPU / 24 Gi RAM / 45 Gi persistent storage across the cluster.
 
+## Doris database provisioning
+
+The telemetry-store requires an `ocg` database to exist in Doris before migrations can run. This is currently handled automatically by the `migrate` init container, which runs `CREATE DATABASE IF NOT EXISTS ocg` before Goose initialises its version tracking table.
+
+> **Known limitation:** The database name `ocg` is currently hardcoded. Consumers cannot choose a different database name without modifying the chart. This will be addressed in a future release by making the database name configurable.
+
+> **Future:** Database provisioning will be moved out of the service and into the Doris Helm chart as a dedicated Helm hook Job. This means `CREATE DATABASE IF NOT EXISTS ocg` will run once at infrastructure provisioning time, independent of any service deployment.
+
 ## Step 1 — Install the Doris Operator (once per cluster)
 
 The Doris Operator manages the Doris FE and BE StatefulSets. Install it once into its own namespace before deploying OCG.
@@ -129,14 +137,6 @@ kubectl create secret generic telemetry-store-doris-ddl-secret \
   --from-literal=DORIS_MIGRATE_DSN="root:<your-doris-password>@tcp(ocg-doris-fe-service:9030)/" \
   -n <your-namespace> --dry-run=client -o yaml | kubectl apply -f -
 ```
-
-## Doris database provisioning
-
-The telemetry-store requires an `ocg` database to exist in Doris before migrations can run. This is currently handled automatically by the `migrate` init container, which runs `CREATE DATABASE IF NOT EXISTS ocg` before Goose initialises its version tracking table.
-
-> **Known limitation:** The database name `ocg` is currently hardcoded. Consumers cannot choose a different database name without modifying the chart. This will be addressed in a future release by making the database name configurable.
-
-> **Future:** Database provisioning will be moved out of the service and into the Doris Helm chart as a dedicated Helm hook Job. This means `CREATE DATABASE IF NOT EXISTS ocg` will run once at infrastructure provisioning time, independent of any service deployment.
 
 ## Step 5 — Enable the telemetry store and upgrade
 
