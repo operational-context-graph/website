@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: "0 2 * * *" # Every day at 2 o'clock, the PRs and issues are checked for their topicality.
 
+permissions:
+  contents: read
+
 jobs:
   stale:
     runs-on: [ubuntu-latest]
