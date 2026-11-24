@@ -12,7 +12,7 @@
   "homepage": "https://github.com/operational-context-graph/website#readme",
   "devDependencies": {
     "@types/node": "26.6.6",
-    "vitepress": "^1.6.4"
+    "vitepress": "1.6.4"
   },
   "scripts": {
     "dev": "vitepress dev",
