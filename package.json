@@ -11,7 +11,7 @@
   },
   "homepage": "https://github.com/operational-context-graph/website#readme",
   "devDependencies": {
-    "@types/node": "26.6.6",
+    "@types/node": "26.6.10",
     "vitepress": "^1.6.4"
   },
   "scripts": {
@@ -20,7 +20,7 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "@lucide/vue": "1.77.0",
+    "@lucide/vue": "1.80.0",
     "mermaid": "11.17.2",
     "vitepress-plugin-mermaid": "2.0.17"
   }
